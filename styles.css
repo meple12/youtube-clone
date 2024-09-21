@@ -1,0 +1,45 @@
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+header {
+    background-color: #ff0000;
+    color: white;
+    padding: 1em;
+    display: flex;
+    justify-content: space-between;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1em;
+}
+
+#content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1em;
+}
+
+.video {
+    background-color: white;
+    margin-bottom: 2em;
+    border: 1px solid #ddd;
+    padding: 1em;
+}
+
+.video video {
+    width: 100%;
+}
+
+.comments {
+    margin-top: 1em;
+}
+
+.comment {
+    border-bottom: 1px solid #eee;
+}
