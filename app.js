@@ -179,3 +179,140 @@ function toggleLoginStatus() {
    }
    loadHomePage();
 }
+// 사용자 데이터를 저장할 객체
+let users = JSON.parse(localStorage.getItem('users')) || {};
+
+// 현재 로그인한 사용자
+let currentUser = localStorage.getItem('currentUser');
+
+// DOM 요소
+const loginLink = document.getElementById('loginLink');
+const userInfo = document.getElementById('userInfo');
+
+// 이벤트 리스너
+loginLink.addEventListener('click', toggleLoginStatus);
+
+// 페이지 로드 시 사용자 상태 업데이트
+updateUserStatus();
+
+// 로그인 상태 토글 함수
+function toggleLoginStatus() {
+    if (currentUser) {
+        logout();
+    } else {
+        showLoginForm();
+    }
+}
+
+// 로그인 폼 표시
+function showLoginForm() {
+    content.innerHTML = `
+        <h2>로그인</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="사용자 이름" required>
+            <input type="password" id="password" placeholder="비밀번호" required>
+            <button type="submit">로그인</button>
+        </form>
+        <p>계정이 없으신가요? <a href="#" id="showRegister">회원가입</a></p>
+    `;
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('showRegister').addEventListener('click', showRegisterForm);
+}
+
+// 회원가입 폼 표시
+function showRegisterForm() {
+    content.innerHTML = `
+        <h2>회원가입</h2>
+        <form id="registerForm">
+            <input type="text" id="newUsername" placeholder="사용자 이름" required>
+            <input type="password" id="newPassword" placeholder="비밀번호" required>
+            <button type="submit">가입하기</button>
+        </form>
+        <p>이미 계정이 있으신가요? <a href="#" id="showLogin">로그인</a></p>
+    `;
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+    document.getElementById('showLogin').addEventListener('click', showLoginForm);
+}
+
+// 로그인 처리
+function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    if (users[username] && users[username].password === password) {
+        currentUser = username;
+        localStorage.setItem('currentUser', currentUser);
+        updateUserStatus();
+        loadHomePage();
+    } else {
+        alert('사용자 이름 또는 비밀번호가 올바르지 않습니다.');
+    }
+}
+
+// 회원가입 처리
+function handleRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById('newUsername').value;
+    const password = document.getElementById('newPassword').value;
+
+    if (users[username]) {
+        alert('이미 존재하는 사용자 이름입니다.');
+    } else {
+        users[username] = { password: password };
+        localStorage.setItem('users', JSON.stringify(users));
+        currentUser = username;
+        localStorage.setItem('currentUser', currentUser);
+        updateUserStatus();
+        loadHomePage();
+    }
+}
+
+// 로그아웃 처리
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    updateUserStatus();
+    loadHomePage();
+}
+
+// 사용자 상태 업데이트
+function updateUserStatus() {
+    if (currentUser) {
+        loginLink.textContent = '로그아웃';
+        userInfo.textContent = `${currentUser}님 환영합니다`;
+    } else {
+        loginLink.textContent = '로그인';
+        userInfo.textContent = '';
+    }
+}
+
+// 기존 loadHomePage 함수 수정
+function loadHomePage() {
+    fetchVideos().then(() => {
+        fetchComments().then(() => {
+            displayVideos();
+        });
+    });
+}
+
+// 비디오 표시 함수 수정 (로그인 상태에 따라 댓글 입력 폼 표시)
+function displayVideos() {
+    let html = '<h2>최신 동영상</h2>';
+    videos.forEach(video => {
+        html += `
+            <div class="video">
+                <h3>${video.title}</h3>
+                <video src="${video.url}" controls></video>
+                <div class="comments">
+                    ${displayComments(video.id)}
+                    ${currentUser ? `
+                        <input type="text" id="comment-${video.id}" placeholder="댓글 추가">
+                        <button onclick="addComment(${video.id})">게시</button>
+                    ` : '<p>댓글을 작성하려면 로그인하세요.</p>'}
+                </div>
+            </div>
+        `;
+    });
+    content.innerHTML = html;
+}
